@@ -1,49 +1,59 @@
-from featureExtract import *
-from outlier_cleaner import *
+from preprocess import *
 from tools import *
+import pickle
 
-from sklearn.neural_network import MLPClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.gaussian_process import GaussianProcessClassifier
-from sklearn.gaussian_process.kernels import RBF
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
-from sklearn.naive_bayes import GaussianNB
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+from sklearn.svm import SVR
+from sklearn.ensemble import RandomForestRegressor
+
+
+from outlier_cleaner import outlierCleaner
+
+import numpy
 
 def main():
     
     '''Runs the main training and testing'''
-    names = ["gini",'entropy']
     
-    classifiers = [RandomForestClassifier(
-                                        max_features=0.9, n_estimators=350,
-                                        criterion='entropy')
+    regressor = RandomForestRegressor(n_estimators=70)
 
     ### Features List
-    featureList = ['target','acousticness', 'energy', 'liveness', 'tempo', 'speechiness', 'key',
+    ### Features List
+    featureList = ['acousticness', 'energy', 'liveness', 'speechiness', 'key',
                        'instrumentalness', 'mode', 'time_signature', 'duration_ms', 'loudness',
-                       'valence', 'danceability']
+                       'valence', 'danceability','artist']
+    
+    label = 'speechiness'
 
-    featureList2 = ['target','instrumentalness','loudness']
+    featureList2 = ['liveness']
 
 
     ### Extracting Training and Testing data
-    features_train, labels_train, features_test, labels_test, data = featureExt('musicData.pkl', featureList)
+    features_train, labels_train, features_test, labels_test = data_preprocess('data.csv',featureList,label)
     
     
     ### Training the data and returning the classifier name and the accuracy
-    acc, bclf, clf = trainData(classifiers, names, features_train,labels_train,features_test,labels_test)
+    acc, pred, reg = trainData(regressor, features_train,labels_train,features_test, labels_test)
 
     ### Printing Accuracy
-    print 'No. Training Data:  {feat}'.format(feat = len(features_train))
-    print 'No. Testing Data: {feat}'.format(feat = len(features_test))
-    print 'The Best is {clf} with {acc}% accuracy'.format(acc = acc, clf = bclf)
+    print 'No. Training Data:  {0}'.format(features_test.shape)
+    print 'No. Testing Data: {0}'.format(labels_test.shape)
+    print 'Orig Data: {0}'.format(labels_test[0:5])
+    print 'Predictions: {0}'.format(pred[0:5])
+    print 'score: {0}'.format(acc)
+
+    pickle.dump(reg,open('bestreg.pkl', "w"))
+
+    '''for i in range(13):
+        for feature, target in zip(features_test[i], labels_test):
+            plt.scatter( feature, target, color='c' ) '''
+            
+    #plt.plot( features_test, labels_test, color='r')
+    #plt.plot( features_test, pred, color='g')
+    #plt.show()
+
 
 if __name__ == '__main__':
     main()
-    
-#Highest Accuracy so far is 75.0% with RandomForestClassifier(n_estimators=40)
 
 
     

@@ -9,27 +9,15 @@ import pylab as pl
 from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import accuracy_score
 
-def trainData(classifiers, names, features_train, labels_train, features_test, labels_test):
-
-    acc = []
-    z = 0
+def trainData(reg, features_train, labels_train, features_test, labels_test):
     
-    for clf in classifiers:
-        #Naive Bayes
-        #Fit and trains data
-        clf.fit(features_train, labels_train)
-        #Predict and returns accuracy
-        pred = clf.predict(features_test)
-        accu =  round(accuracy_score(pred, labels_test) * 100,2)
-        acc.append(accu)
-
-    for i in acc:
-        if i == max(acc):
-            bestClf = names[z]
-            bestClfObj = classifiers[z]
-        z += 1
+    #Fit and trains data
+    reg.fit(features_train, labels_train)
+    #Predict and returns accuracy
+    pred = reg.predict(features_test)
+    acc =  reg.score(features_test, labels_test)
            
-    return max(acc), bestClf, bestClfObj
+    return acc, pred, reg
 
 def importantFeatures(clf, features_train, featureList):
     ### Printing features importance
@@ -40,7 +28,7 @@ def importantFeatures(clf, features_train, featureList):
     print("Feature ranking:")
     for f in range(features_train.shape[1]):
         c = indices[f]
-        print("{f}. feature {d} ({i})" .format(f = f + 1, d = featureList[c+1], i = importances[indices[f]]))
+        print("{f}. feature {d} ({i})" .format(f = f + 1, d = featureList[c], i = importances[indices[f]]))
 
     ### Plot the feature importances of the forest
     plt.figure()
